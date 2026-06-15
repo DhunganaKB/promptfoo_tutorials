@@ -1,0 +1,10 @@
+# Top-level requirements — installs everything needed across all parts.
+# Each part also ships its own requirements.txt so it can run independently.
+#
+#   pip install -r requirements.txt
+#
+# Part I — Assertions
+-r part1_assertions/requirements.txt
+
+# Part II, III, ... will be added here as the course grows:
+# -r part2_xxxxx/requirements.txt

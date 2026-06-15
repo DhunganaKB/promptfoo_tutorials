@@ -1,0 +1,12 @@
+# Python dependencies for Part I — Assertions
+# Install with:  pip install -r requirements.txt
+#
+# Used by the custom Python assertion in assertions/readability.py,
+# which promptfoo executes as a grader.
+
+textstat>=0.7.4        # readability scoring (Flesch-Kincaid grade level)
+
+# Optional — only if you extend the project with your own Python providers
+# or scripts that call the model directly:
+# openai>=1.0.0
+# python-dotenv>=1.0.0

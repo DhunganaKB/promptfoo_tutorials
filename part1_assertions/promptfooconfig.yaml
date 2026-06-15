@@ -1,0 +1,126 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+#
+# Promptfoo Assertions Overview — hands-on tutorial config
+# Run with:  npx promptfoo@latest eval
+# View with: npx promptfoo@latest view
+#
+# This single config walks through the main assertion families shown in the
+# "Promptfoo Assertions Overview" video:
+#   1. Deterministic assertions (no extra model call)
+#   2. Model-graded assertions (an LLM/embedding judges the output)
+
+description: "Promptfoo Assertions Overview — hands-on tutorial"
+
+# ---------------------------------------------------------------------------
+# PROMPTS — what we send to the model. {{question}} is filled in per test case.
+# ---------------------------------------------------------------------------
+prompts:
+  - file://prompts/assistant.txt
+
+# ---------------------------------------------------------------------------
+# PROVIDERS — which model(s) to run the prompts against.
+# Default uses OpenAI. Set OPENAI_API_KEY in your environment first.
+# To use Anthropic instead, comment OpenAI and uncomment the Anthropic line
+# (set ANTHROPIC_API_KEY). Model-graded asserts use this same provider as judge.
+# ---------------------------------------------------------------------------
+providers:
+  - openai:gpt-4o-mini
+  # - anthropic:messages:claude-haiku-4-5-20251001
+
+# ---------------------------------------------------------------------------
+# defaultTest — assertions applied to EVERY test case below.
+# Great place for cross-cutting metrics like latency and cost.
+# ---------------------------------------------------------------------------
+defaultTest:
+  assert:
+    - type: latency
+      threshold: 10000 # fail if a single call takes longer than 10s
+    - type: cost
+      threshold: 0.01 # fail if a single call costs more than $0.01
+
+# ---------------------------------------------------------------------------
+# TESTS — each entry is one test case: variables + assertions to check.
+# ---------------------------------------------------------------------------
+tests:
+  # ===================== 1. DETERMINISTIC ASSERTIONS =====================
+
+  - description: "contains / icontains — substring is present"
+    vars:
+      question: "What is the capital of France? Answer in one word."
+    assert:
+      - type: icontains # case-insensitive substring
+        value: paris
+      - type: not-contains # must NOT appear
+        value: London
+
+  - description: "regex — output matches a pattern"
+    vars:
+      question: "Reply with exactly the word: APPROVED"
+    assert:
+      - type: regex
+        value: "^\\s*APPROVED\\s*$"
+
+  - description: "starts-with — output begins with text"
+    vars:
+      question: "Start your reply with the word 'Sure'. Then say hello."
+    assert:
+      - type: starts-with
+        value: "Sure"
+
+  - description: "is-json — output is valid JSON"
+    vars:
+      question: 'Return ONLY a JSON object with keys "city" and "country" for Tokyo. No markdown fences.'
+    assert:
+      - type: is-json
+
+  - description: "javascript — custom logic on the output string"
+    vars:
+      question: "Give me a one-sentence fun fact about octopuses."
+    assert:
+      - type: javascript
+        # `output` is the model's text response. Return true/false or a 0..1 score.
+        value: "output.length > 10 && output.length < 300"
+
+  - description: "python — custom logic in Python"
+    vars:
+      question: "List three primary colors, comma separated."
+    assert:
+      - type: python
+        # `output` is the model response; return a bool, number, or dict.
+        value: "len(output.split(',')) == 3"
+
+  # ===================== 2. MODEL-GRADED ASSERTIONS =====================
+  # These send the output to a model/embedding to judge quality.
+
+  - description: "llm-rubric — an LLM grades against a rubric"
+    vars:
+      question: "A customer is angry their order is late. Write a short apology."
+    assert:
+      - type: llm-rubric
+        value: "The response is apologetic, polite, and offers to help."
+
+  - description: "similar — semantic similarity via embeddings"
+    vars:
+      question: "In one sentence, what is photosynthesis?"
+    assert:
+      - type: similar
+        value: "Photosynthesis is how plants convert sunlight into energy."
+        threshold: 0.7 # cosine similarity must be >= 0.7
+
+  - description: "g-eval + custom python — simple, readable explanation"
+    vars:
+      question: "Explain recursion to a 10-year-old in 2 sentences."
+    assert:
+      - type: g-eval
+        value: "Explanation is simple, age-appropriate, and avoids jargon."
+      # Custom Python grader (needs `pip install -r requirements.txt`).
+      # Scores how easy the answer is to read. See assertions/readability.py
+      - type: python
+        value: file://assertions/readability.py
+
+  - description: "factuality — output agrees with a known fact"
+    vars:
+      question: "What is the boiling point of water at sea level in Celsius?"
+    assert:
+      - type: factuality
+        value: "Water boils at 100 degrees Celsius at sea level."

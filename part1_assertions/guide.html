@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promptfoo Assertions — Step-by-Step Tutorial</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1d2130; --border:#2a2f40;
+    --text:#e6e8ee; --muted:#9aa3b4; --accent:#6ea8fe;
+    --green:#4ade80; --amber:#fbbf24; --code-bg:#0b0d13; --pink:#f472b6;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:48px 24px 120px}
+  header.hero{
+    border:1px solid var(--border); border-radius:16px; padding:34px 32px;
+    background:linear-gradient(135deg,#1a1f2e,#13161f); margin-bottom:14px;
+  }
+  .badge{display:inline-block; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); border:1px solid var(--border); border-radius:999px; padding:4px 12px; margin-bottom:16px}
+  h1{margin:0 0 8px; font-size:32px; line-height:1.2}
+  h2{font-size:24px; margin:46px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border)}
+  h3{font-size:18px; margin:28px 0 8px; color:#cdd3e1}
+  p{color:#cdd3e1}
+  a{color:var(--accent)}
+  .sub{color:var(--muted); font-size:15px}
+  .toc{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:18px 22px; margin:18px 0 8px}
+  .toc h4{margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted)}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:32px}
+  .toc a{text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+
+  .step{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:6px 26px 22px; margin:20px 0}
+  .step-num{display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    background:var(--accent); color:#0b0d13; font-weight:700; border-radius:8px; margin-right:10px; font-size:15px}
+  .step h2{border:0; display:flex; align-items:center; margin:22px 0 6px; padding:0}
+
+  pre{background:var(--code-bg); border:1px solid var(--border); border-radius:10px; padding:16px 18px;
+    overflow-x:auto; margin:14px 0; position:relative}
+  code{font-family:"SF Mono",Menlo,Consolas,"Liberation Mono",monospace; font-size:13.5px}
+  pre code{color:#dfe5f3}
+  p code,li code{background:var(--panel2); padding:2px 7px; border-radius:5px; font-size:13px; color:#ffd9a8}
+  .copy{position:absolute; top:8px; right:8px; background:var(--panel2); color:var(--muted);
+    border:1px solid var(--border); border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer}
+  .copy:hover{color:var(--text); border-color:var(--accent)}
+  .copy.done{color:var(--green); border-color:var(--green)}
+
+  .tok-com{color:#6b7280} .tok-key{color:#7dd3fc} .tok-str{color:#a5f3a0} .tok-num{color:#fbbf24}
+  .tok-cmd{color:#f472b6}
+
+  .note{border-left:3px solid var(--accent); background:rgba(110,168,254,.08); padding:12px 18px; border-radius:0 8px 8px 0; margin:16px 0}
+  .warn{border-left:3px solid var(--amber); background:rgba(251,191,36,.08); padding:12px 18px; border-radius:0 8px 8px 0; margin:16px 0}
+  .ok{border-left:3px solid var(--green); background:rgba(74,222,128,.08); padding:12px 18px; border-radius:0 8px 8px 0; margin:16px 0}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:14px}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top}
+  th{color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.05em}
+  td code{background:var(--panel2); padding:2px 6px; border-radius:4px; color:#ffd9a8; white-space:nowrap}
+  tr:hover td{background:rgba(255,255,255,.02)}
+
+  .pill{display:inline-block; font-size:11px; padding:2px 9px; border-radius:999px; font-weight:600}
+  .pill.det{background:rgba(74,222,128,.15); color:var(--green)}
+  .pill.grade{background:rgba(244,114,182,.15); color:var(--pink)}
+
+  footer{margin-top:50px; padding-top:20px; border-top:1px solid var(--border); color:var(--muted); font-size:14px}
+  kbd{background:var(--panel2); border:1px solid var(--border); border-bottom-width:2px; border-radius:5px; padding:1px 7px; font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="badge">Promptfoo · Hands-on</span>
+    <h1>Testing LLM Output with Assertions</h1>
+    <p class="sub">A step-by-step, follow-along build of the
+      <a href="https://www.youtube.com/watch?v=jpY8ECnAosU" target="_blank">“Promptfoo Assertions Overview”</a>
+      tutorial. By the end you'll run a real evaluation that grades model output with
+      both <span class="pill det">deterministic</span> and <span class="pill grade">model-graded</span> assertions.</p>
+  </header>
+
+  <div class="toc">
+    <h4>What you'll do</h4>
+    <ol>
+      <li><a href="#what">What is promptfoo &amp; assertions</a></li>
+      <li><a href="#prereq">Prerequisites</a></li>
+      <li><a href="#key">Set your API key</a></li>
+      <li><a href="#prompt">Create the prompt</a></li>
+      <li><a href="#config">Write promptfooconfig.yaml</a></li>
+      <li><a href="#deterministic">Deterministic assertions</a></li>
+      <li><a href="#graded">Model-graded assertions</a></li>
+      <li><a href="#run">Run the eval</a></li>
+      <li><a href="#view">View &amp; read results</a></li>
+      <li><a href="#reference">Assertion reference</a></li>
+    </ol>
+  </div>
+
+  <!-- 1 -->
+  <section class="step" id="what">
+    <h2><span class="step-num">1</span> What is promptfoo &amp; what is an assertion?</h2>
+    <p><strong>Promptfoo</strong> is an open-source tool for <em>testing</em> prompts and LLMs — like unit tests, but for AI output. You define test cases, run them against one or more models, and promptfoo scores each output.</p>
+    <p>An <strong>assertion</strong> is a single check applied to the model's output. There are two families:</p>
+    <table>
+      <tr><th>Family</th><th>How it judges</th><th>Examples</th></tr>
+      <tr>
+        <td><span class="pill det">deterministic</span></td>
+        <td>Pure code — fast, free, repeatable. No extra model call.</td>
+        <td><code>contains</code>, <code>regex</code>, <code>is-json</code>, <code>javascript</code></td>
+      </tr>
+      <tr>
+        <td><span class="pill grade">model-graded</span></td>
+        <td>Another model (or embeddings) judges quality/meaning.</td>
+        <td><code>llm-rubric</code>, <code>similar</code>, <code>g-eval</code>, <code>factuality</code></td>
+      </tr>
+    </table>
+    <p>A test case passes only when <em>all</em> of its assertions pass.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="step" id="prereq">
+    <h2><span class="step-num">2</span> Prerequisites</h2>
+    <ul>
+      <li><strong>Node.js 18+</strong> — check with <code>node --version</code>. No global install needed; we use <code>npx</code>.</li>
+      <li><strong>Python 3.9+</strong> — powers the custom Python grader. Install deps once with the command below.</li>
+      <li><strong>An API key</strong> — OpenAI by default (Anthropic works too).</li>
+    </ul>
+    <pre><button class="copy">Copy</button><code><span class="tok-cmd">pip</span> install -r requirements.txt</code></pre>
+    <div class="note">Everything for this part lives in this folder (<code>part1_assertions/</code>). The HTML you're reading is <code>guide.html</code>, next to <code>promptfooconfig.yaml</code>, <code>prompts/assistant.txt</code>, <code>assertions/readability.py</code>, and <code>requirements.txt</code>.</div>
+  </section>
+
+  <!-- 3 -->
+  <section class="step" id="key">
+    <h2><span class="step-num">3</span> Set your API key</h2>
+    <p>Export it in your terminal (simplest), or copy <code>.env.example</code> to <code>.env</code> and fill it in.</p>
+    <pre><button class="copy">Copy</button><code><span class="tok-cmd">export</span> OPENAI_API_KEY=<span class="tok-str">"sk-...your-key..."</span></code></pre>
+    <div class="warn">Running an eval makes real API calls and costs a few cents. The config caps each call at <code>$0.01</code> via a <code>cost</code> assertion.</div>
+  </section>
+
+  <!-- 4 -->
+  <section class="step" id="prompt">
+    <h2><span class="step-num">4</span> Create the prompt</h2>
+    <p>Prompts use <code>{{variable}}</code> placeholders that get filled from each test case. This is <code>prompts/assistant.txt</code>:</p>
+    <pre><button class="copy">Copy</button><code>You are a concise, accurate assistant.
+Answer the user's question clearly and factually. Do not add extra commentary.
+
+Question: {{question}}</code></pre>
+  </section>
+
+  <!-- 5 -->
+  <section class="step" id="config">
+    <h2><span class="step-num">5</span> Write <code>promptfooconfig.yaml</code></h2>
+    <p>This is the heart of promptfoo. Three required sections plus an optional <code>defaultTest</code>:</p>
+    <table>
+      <tr><th>Section</th><th>Meaning</th></tr>
+      <tr><td><code>prompts</code></td><td>The prompt template(s) to evaluate.</td></tr>
+      <tr><td><code>providers</code></td><td>Which model(s) run the prompts.</td></tr>
+      <tr><td><code>tests</code></td><td>The test cases: <code>vars</code> + <code>assert</code> checks.</td></tr>
+      <tr><td><code>defaultTest</code></td><td>Assertions applied to <em>every</em> test (e.g. latency, cost).</td></tr>
+    </table>
+    <p>Skeleton:</p>
+    <pre><button class="copy">Copy</button><code><span class="tok-key">description</span>: <span class="tok-str">"Promptfoo Assertions Overview — hands-on tutorial"</span>
+
+<span class="tok-key">prompts</span>:
+  - <span class="tok-str">file://prompts/assistant.txt</span>
+
+<span class="tok-key">providers</span>:
+  - <span class="tok-str">openai:gpt-4o-mini</span>
+
+<span class="tok-key">defaultTest</span>:
+  <span class="tok-key">assert</span>:
+    - <span class="tok-key">type</span>: latency
+      <span class="tok-key">threshold</span>: <span class="tok-num">10000</span>   <span class="tok-com"># fail if a call is slower than 10s</span>
+    - <span class="tok-key">type</span>: cost
+      <span class="tok-key">threshold</span>: <span class="tok-num">0.01</span>    <span class="tok-com"># fail if a call costs more than $0.01</span>
+
+<span class="tok-key">tests</span>:
+  <span class="tok-com"># ... test cases go here (next two steps) ...</span></code></pre>
+    <div class="note">To use Anthropic instead, swap the provider line for
+      <code>anthropic:messages:claude-haiku-4-5-20251001</code> and set <code>ANTHROPIC_API_KEY</code>.</div>
+  </section>
+
+  <!-- 6 -->
+  <section class="step" id="deterministic">
+    <h2><span class="step-num">6</span> Add <span class="pill det">deterministic</span> assertions</h2>
+    <p>These run in code — instant and free. Add these entries under <code>tests:</code>.</p>
+    <pre><button class="copy">Copy</button><code><span class="tok-com"># contains / not-contains</span>
+- <span class="tok-key">description</span>: <span class="tok-str">"substring is present"</span>
+  <span class="tok-key">vars</span>:
+    <span class="tok-key">question</span>: <span class="tok-str">"What is the capital of France? Answer in one word."</span>
+  <span class="tok-key">assert</span>:
+    - <span class="tok-key">type</span>: icontains      <span class="tok-com"># case-insensitive substring</span>
+      <span class="tok-key">value</span>: paris
+    - <span class="tok-key">type</span>: not-contains   <span class="tok-com"># must NOT appear</span>
+      <span class="tok-key">value</span>: London
+
+<span class="tok-com"># regex — match a pattern</span>
+- <span class="tok-key">description</span>: <span class="tok-str">"output matches a pattern"</span>
+  <span class="tok-key">vars</span>:
+    <span class="tok-key">question</span>: <span class="tok-str">"Reply with exactly the word: APPROVED"</span>
+  <span class="tok-key">assert</span>:
+    - <span class="tok-key">type</span>: regex
+      <span class="tok-key">value</span>: <span class="tok-str">"^\\s*APPROVED\\s*$"</span>
+
+<span class="tok-com"># is-json — output parses as JSON</span>
+- <span class="tok-key">description</span>: <span class="tok-str">"output is valid JSON"</span>
+  <span class="tok-key">vars</span>:
+    <span class="tok-key">question</span>: <span class="tok-str">'Return ONLY a JSON object with keys "city" and "country" for Tokyo.'</span>
+  <span class="tok-key">assert</span>:
+    - <span class="tok-key">type</span>: is-json
+
+<span class="tok-com"># javascript / python — your own logic; `output` is the model text</span>
+- <span class="tok-key">description</span>: <span class="tok-str">"custom JS check"</span>
+  <span class="tok-key">vars</span>:
+    <span class="tok-key">question</span>: <span class="tok-str">"Give me a one-sentence fun fact about octopuses."</span>
+  <span class="tok-key">assert</span>:
+    - <span class="tok-key">type</span>: javascript
+      <span class="tok-key">value</span>: <span class="tok-str">"output.length > 10 && output.length < 300"</span></code></pre>
+  </section>
+
+  <!-- 7 -->
+  <section class="step" id="graded">
+    <h2><span class="step-num">7</span> Add <span class="pill grade">model-graded</span> assertions</h2>
+    <p>These ask a model (or embeddings) to judge meaning and quality — for when there's no single “correct” string. They use the same provider as the judge.</p>
+    <pre><button class="copy">Copy</button><code><span class="tok-com"># llm-rubric — an LLM grades against your rubric</span>
+- <span class="tok-key">description</span>: <span class="tok-str">"apology is polite"</span>
+  <span class="tok-key">vars</span>:
+    <span class="tok-key">question</span>: <span class="tok-str">"A customer is angry their order is late. Write a short apology."</span>
+  <span class="tok-key">assert</span>:
+    - <span class="tok-key">type</span>: llm-rubric
+      <span class="tok-key">value</span>: <span class="tok-str">"The response is apologetic, polite, and offers to help."</span>
+
+<span class="tok-com"># similar — semantic (embedding) similarity to a reference answer</span>
+- <span class="tok-key">description</span>: <span class="tok-str">"meaning matches reference"</span>
+  <span class="tok-key">vars</span>:
+    <span class="tok-key">question</span>: <span class="tok-str">"In one sentence, what is photosynthesis?"</span>
+  <span class="tok-key">assert</span>:
+    - <span class="tok-key">type</span>: similar
+      <span class="tok-key">value</span>: <span class="tok-str">"Photosynthesis is how plants convert sunlight into energy."</span>
+      <span class="tok-key">threshold</span>: <span class="tok-num">0.7</span>
+
+<span class="tok-com"># factuality — output agrees with a known fact</span>
+- <span class="tok-key">description</span>: <span class="tok-str">"answer is factually correct"</span>
+  <span class="tok-key">vars</span>:
+    <span class="tok-key">question</span>: <span class="tok-str">"Boiling point of water at sea level in Celsius?"</span>
+  <span class="tok-key">assert</span>:
+    - <span class="tok-key">type</span>: factuality
+      <span class="tok-key">value</span>: <span class="tok-str">"Water boils at 100 degrees Celsius at sea level."</span></code></pre>
+    <div class="ok">The complete, ready-to-run version of all this is already saved as <code>promptfooconfig.yaml</code> in this folder — you don't have to retype it.</div>
+  </section>
+
+  <!-- 8 -->
+  <section class="step" id="run">
+    <h2><span class="step-num">8</span> Run the evaluation</h2>
+    <p>From this folder (where <code>promptfooconfig.yaml</code> lives):</p>
+    <pre><button class="copy">Copy</button><code><span class="tok-cmd">npx</span> promptfoo@latest eval</code></pre>
+    <p>Promptfoo runs every test against the model and prints a pass/fail grid plus a summary like <code>Passed: 9  Failed: 1</code>. The first run downloads promptfoo, so give it a moment.</p>
+    <div class="note">Re-run only failing tests, or filter while iterating:
+      <br><code>npx promptfoo@latest eval --filter-pattern "json"</code></div>
+  </section>
+
+  <!-- 9 -->
+  <section class="step" id="view">
+    <h2><span class="step-num">9</span> View &amp; read the results</h2>
+    <p>Open the interactive web viewer:</p>
+    <pre><button class="copy">Copy</button><code><span class="tok-cmd">npx</span> promptfoo@latest view</code></pre>
+    <p>It opens <code>http://localhost:15500</code> with a table: one row per test, one column per provider. Click any cell to see the full output and exactly which assertions passed or failed, with the grader's reasoning for model-graded ones.</p>
+    <p>How to read a result:</p>
+    <ul>
+      <li><strong>Green / PASS</strong> — every assertion in that test passed.</li>
+      <li><strong>Red / FAIL</strong> — at least one assertion failed; the reason is shown inline.</li>
+      <li><strong>Score</strong> — model-graded asserts return <code>0.0–1.0</code>; thresholds decide pass/fail.</li>
+    </ul>
+    <div class="warn">If a model-graded test occasionally flips pass/fail, that's expected — LLM judges aren't perfectly deterministic. Loosen the rubric or lower the threshold to stabilize.</div>
+  </section>
+
+  <!-- 10 -->
+  <section class="step" id="reference">
+    <h2><span class="step-num">10</span> Assertion quick reference</h2>
+    <h3><span class="pill det">Deterministic</span></h3>
+    <table>
+      <tr><th>Type</th><th>Passes when…</th></tr>
+      <tr><td><code>equals</code></td><td>Output exactly equals <code>value</code>.</td></tr>
+      <tr><td><code>contains</code> / <code>icontains</code></td><td>Output includes <code>value</code> (i = case-insensitive).</td></tr>
+      <tr><td><code>not-contains</code></td><td>Output does <em>not</em> include <code>value</code>.</td></tr>
+      <tr><td><code>regex</code></td><td>Output matches the regex in <code>value</code>.</td></tr>
+      <tr><td><code>starts-with</code></td><td>Output begins with <code>value</code>.</td></tr>
+      <tr><td><code>is-json</code> / <code>is-sql</code></td><td>Output is valid JSON / SQL.</td></tr>
+      <tr><td><code>javascript</code> / <code>python</code></td><td>Your code returns true / a passing score.</td></tr>
+      <tr><td><code>levenshtein</code></td><td>Edit distance to <code>value</code> ≤ <code>threshold</code>.</td></tr>
+      <tr><td><code>latency</code></td><td>Response time (ms) ≤ <code>threshold</code>.</td></tr>
+      <tr><td><code>cost</code></td><td>Call cost ($) ≤ <code>threshold</code>.</td></tr>
+    </table>
+    <h3><span class="pill grade">Model-graded</span></h3>
+    <table>
+      <tr><th>Type</th><th>Passes when…</th></tr>
+      <tr><td><code>llm-rubric</code></td><td>An LLM judges the output meets your written rubric.</td></tr>
+      <tr><td><code>g-eval</code></td><td>Chain-of-thought scoring against criteria.</td></tr>
+      <tr><td><code>similar</code></td><td>Embedding cosine similarity to <code>value</code> ≥ <code>threshold</code>.</td></tr>
+      <tr><td><code>factuality</code></td><td>Output is factually consistent with <code>value</code>.</td></tr>
+      <tr><td><code>answer-relevance</code></td><td>Output is relevant to the original question.</td></tr>
+      <tr><td><code>context-faithfulness</code></td><td>Output stays faithful to provided context (RAG).</td></tr>
+    </table>
+    <p class="sub">Full docs: <a href="https://www.promptfoo.dev/docs/configuration/expected-outputs/" target="_blank">promptfoo.dev/docs · assertions &amp; metrics</a></p>
+  </section>
+
+  <footer>
+    Built to follow <a href="https://www.youtube.com/watch?v=jpY8ECnAosU" target="_blank">“Promptfoo Assertions Overview”</a>.
+    Files in this part: <code>promptfooconfig.yaml</code>, <code>prompts/assistant.txt</code>, <code>assertions/readability.py</code>, <code>requirements.txt</code>, <code>.env.example</code>, <code>README.md</code>.
+    Run <code>pip install -r requirements.txt</code>, then <code>npx promptfoo@latest eval</code> and <code>npx promptfoo@latest view</code>.
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var code = btn.parentElement.querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(function(){
+        btn.textContent='Copied!'; btn.classList.add('done');
+        setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('done'); }, 1500);
+      });
+    });
+  });
+</script>
+</body>
+</html>

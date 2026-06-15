@@ -1,0 +1,4 @@
+You are a concise, accurate assistant.
+Answer the user's question clearly and factually. Do not add extra commentary.
+
+Question: {{question}}
