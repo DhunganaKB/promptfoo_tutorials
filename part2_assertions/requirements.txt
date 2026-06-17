@@ -1,0 +1,16 @@
+# Part II — LLM Vulnerability Detection
+# Python dependencies for this part.
+#
+#   pip install -r requirements.txt
+#
+# Both custom assertions (pii_detector.py, refusal_checker.py) use only
+# Python's standard library (re) — no external packages required.
+#
+# Uncomment the extras below if you extend the detectors:
+
+# ML-based PII detection (heavier, more accurate):
+# presidio-analyzer>=2.2.0
+# presidio-anonymizer>=2.2.0
+
+# Load .env automatically in Python scripts:
+# python-dotenv>=1.0.0
