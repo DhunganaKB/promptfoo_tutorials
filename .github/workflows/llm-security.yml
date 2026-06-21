@@ -42,7 +42,7 @@ jobs:
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       # 3. Cache the npx/npm download so repeated runs are instant
       - name: Cache npm (promptfoo)

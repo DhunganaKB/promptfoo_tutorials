@@ -32,19 +32,23 @@ jobs:
     strategy:
       fail-fast: false           # Don't cancel other providers if one fails
       matrix:
-        provider:
-          - openai:gpt-4o-mini
-          # - openai:gpt-4o        # Uncomment to add GPT-4o comparison
-          # - anthropic:messages:claude-haiku-4-5-20251001
+        include:
+          - provider: openai:gpt-4o-mini
+            provider_safe: openai-gpt-4o-mini
+          # Uncomment to add more providers:
+          # - provider: openai:gpt-4o
+          #   provider_safe: openai-gpt-4o
+          # - provider: anthropic:messages:claude-haiku-4-5-20251001
+          #   provider_safe: anthropic-claude-haiku
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Cache npm (promptfoo)
         uses: actions/cache@v4
@@ -87,8 +91,9 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          # Include provider name so artifacts don't overwrite each other
-          name: quality-eval-${{ matrix.provider }}-${{ github.run_number }}
+          # provider_safe is the colon-free version of provider (e.g. openai-gpt-4o-mini)
+          # Artifact names cannot contain colons on Windows file systems.
+          name: quality-eval-${{ matrix.provider_safe }}-${{ github.run_number }}
           path: part3_cicd_assertions/output/
           retention-days: 14
 
