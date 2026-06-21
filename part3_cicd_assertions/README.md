@@ -64,10 +64,10 @@ make results
    `GitHub repo → Settings → Secrets → Actions → New secret`
    Name: `OPENAI_API_KEY`, Value: `sk-...`
 
-2. **Copy the `.github/` folder to your repo root:**
-   ```bash
-   cp -r .github/ ../../.github/
-   ```
+2. **The workflows are already at the repo root** (`/.github/workflows/`).
+   GitHub Actions only reads workflows from the **repository root** — not from
+   subfolders. The workflow files reference `part3_cicd_assertions/` via
+   `defaults.run.working-directory` and `paths:` filters.
 
 3. **Push to main or open a PR** — the workflows trigger automatically.
 
