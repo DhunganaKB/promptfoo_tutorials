@@ -1,0 +1,14 @@
+# Part III — CI/CD Integration
+# Python dependencies.
+#
+#   pip install -r requirements.txt
+#
+# Both assertion scripts (pii_detector.py, refusal_checker.py) use only
+# Python stdlib. The result parser (scripts/parse_results.py) also uses
+# only stdlib — no external packages required for this part.
+
+# Uncomment for ML-based PII detection:
+# presidio-analyzer>=2.2.0
+
+# Uncomment to auto-load .env in local scripts:
+# python-dotenv>=1.0.0

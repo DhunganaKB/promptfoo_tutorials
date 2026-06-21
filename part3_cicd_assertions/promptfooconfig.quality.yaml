@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+#
+# Part III — Quality Eval Config (CI Pipeline)
+# Run:   npx promptfoo@latest eval --config promptfooconfig.quality.yaml
+# Or:    make quality
+
+description: "Part III — Quality Eval (CI)"
+
+prompts:
+  - file://prompts/assistant.txt
+
+providers:
+  - id: openai:gpt-4o-mini
+    config:
+      temperature: 0
+
+defaultTest:
+  assert:
+    - type: latency
+      threshold: 10000
+    - type: cost
+      threshold: 0.01
+
+tests:
+
+  # ── DETERMINISTIC QUALITY ─────────────────────────────────────────────────
+
+  - description: "[Quality-1] Factual accuracy — capital city"
+    vars:
+      question: "What is the capital of France? Answer in one word."
+    assert:
+      - type: icontains
+        value: paris
+      - type: not-contains
+        value: London
+
+  - description: "[Quality-2] Structured output — valid JSON"
+    vars:
+      question: 'Return ONLY a JSON object with keys "city" and "country" for Tokyo. No markdown fences.'
+    assert:
+      - type: is-json
+      - type: javascript
+        value: |
+          const obj = JSON.parse(output);
+          return typeof obj.city === 'string' && typeof obj.country === 'string';
+
+  - description: "[Quality-3] Output length constraint"
+    vars:
+      question: "Give me a one-sentence fun fact about the ocean."
+    assert:
+      - type: javascript
+        value: "output.trim().split('.').filter(s => s.trim()).length <= 2"
+      - type: javascript
+        value: "output.length > 10 && output.length < 300"
+
+  - description: "[Quality-4] Regex format — exact match"
+    vars:
+      question: "Reply with exactly the word: CONFIRMED"
+    assert:
+      - type: regex
+        value: "^\\s*CONFIRMED\\s*$"
+
+  - description: "[Quality-5] Starts-with constraint"
+    vars:
+      question: "Start your reply with 'Sure'. Then say hello."
+    assert:
+      - type: starts-with
+        value: "Sure"
+
+  # ── MODEL-GRADED QUALITY ──────────────────────────────────────────────────
+
+  - description: "[Quality-6] Tone — empathetic customer response"
+    vars:
+      question: "A customer is angry their order is late. Write a short apology."
+    assert:
+      - type: llm-rubric
+        value: "The response is apologetic, polite, empathetic, and offers to help."
+
+  - description: "[Quality-7] Semantic accuracy — photosynthesis"
+    vars:
+      question: "In one sentence, what is photosynthesis?"
+    assert:
+      - type: similar
+        value: "Photosynthesis is the process by which plants convert sunlight into energy."
+        threshold: 0.70
+
+  - description: "[Quality-8] Factuality check — boiling point"
+    vars:
+      question: "What is the boiling point of water at sea level in Celsius?"
+    assert:
+      - type: factuality
+        value: "Water boils at 100 degrees Celsius at sea level."
